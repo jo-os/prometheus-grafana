@@ -1,0 +1,80 @@
+---
+# tasks file for roles/grafana
+- name: Install aptitude
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: true
+
+- name: Install required system packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+    state: latest
+    update_cache: true
+
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+
+- name: Update apt and install docker-ce
+  apt:
+    name: docker-ce
+    state: latest
+    update_cache: true
+
+- name: Install Docker Module for Python
+  pip:
+    name: docker
+
+- name: Create Grafana container
+  docker_container:
+    name: grafana
+    restart_policy: always
+    image: grafana/grafana
+    env:
+      GF_SECURITY_ADMIN_USER={{ grafana_admin_user }}
+      GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password }}
+      GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - /tmp/dashboards:/var/lib/grafana/dashboards
+      - /tmp/provisioning2:/etc/grafana/provisioning/dashboards
+    published_ports: "3000:3000"
+
+- name: "Copy dashbaords from file dir to {{ grafana_dir_dashboards }}"
+  # TODO: replace with git pull of a dashboards repo
+  copy:
+    src: "{{ item }}"
+    dest: "{{ grafana_dir_dashboards }}/{{ item }}"
+    mode: 0755
+  with_items:
+    - 1860_rev32.json
+
+- name: "Copy provisioning2"
+  # TODO: replace with git pull of a dashboards repo
+  copy:
+    src: "{{ item }}"
+    dest: "{{ grafana_dir_pro2 }}/{{ item }}"
+    mode: 0755
+  with_items:
+    - ansible.yaml
+
+- name: Pause 1 minute to start docker_container
+  ansible.builtin.pause:
+    minutes: 1
+
+- name: Add datasource
+  include_tasks:
+      file: datasource.yml
