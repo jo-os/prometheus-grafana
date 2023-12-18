@@ -30,10 +30,6 @@
   ansible.builtin.file:
     path: /var/lib/prometheus/
     mode: '777'
-  
-# - name: postgres-adapter need Terraform output
-#   include_tasks:
-#       file: adapter.yml
 
 - name: start prometheus
   systemd:

@@ -1,0 +1,7 @@
+---
+- name: install prometheus
+  hosts: monitoring
+  become: true
+  roles:  
+   - prometheus
+   - grafana

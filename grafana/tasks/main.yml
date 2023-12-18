@@ -35,6 +35,12 @@
     state: latest
     update_cache: true
 
+- name: remove EXTERNALLY-MANAGED if we're on debian12
+  ansible.builtin.file:
+    path: /usr/lib/python3.11/EXTERNALLY-MANAGED
+    state: absent
+  when: ansible_distribution == "Debian"
+
 - name: Install Docker Module for Python
   pip:
     name: docker

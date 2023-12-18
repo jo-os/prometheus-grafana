@@ -1,48 +1,20 @@
-#jinja2: lstrip_blocks: "True"
-{{ prometheus_var_config | to_nice_yaml(indent=2) }}
-{% if prometheus_node_exporter_group %}
-- job_name: node
-  scrape_interval: 15s
-  metrics_path: /metrics
-  static_configs:
-  - targets:
-{% for server in groups %}
-   {% if server | regex_search('web') %}
-      - '{{ groups[server] | join("")}}:9100'
-   {% endif %}
-{% endfor %}
-{% endif %}
 
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
 
-#global:
-#scrape_interval: 15s
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'codelab-monitor'
 
-#scrape_configs:
-#- job_name: 'prometheus'
-#   scrape_interval: 5s
-#   static_configs:
-#      - targets: ["{{ groups['prometheus'] | join('')}}:9090"]
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
 
-- job_name: 'nginx-log-ex'
-  scrape_interval: 15s
-  static_configs:
-  - targets:
-{% for server in groups %}
-   {% if server | regex_search('web') %}
-      - '{{ groups[server] | join("")}}:4040'
-   {% endif %}
-{% endfor %}
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
 
-rule_files:
-  - test.yml
-
-alerting:
-  alertmanagers:
-    - static_configs:
-      - targets: 
-        - 'localhost:9093'
-
-remote_write:
-    - url: "http://127.0.0.1:9201/write"
-remote_read:
-    - url: "http://127.0.0.1:9201/read"
+    static_configs:
+      - targets: ['localhost:9090', '10.103.7.7:9100', '10.103.7.8:9100', '10.103.7.9:9100', '10.103.7.10:9100', '172.17.16.5:9100', '172.17.16.7:9100']

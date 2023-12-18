@@ -8,4 +8,3 @@ grafana_dir_pro: /tmp/provisioning
 grafana_dir_pro2: /tmp/provisioning2
 grafana_data_dir: "/var/lib/grafana"
 grafana_dashboards_dir: "dashboards"
-grafana_service_name: "grafana"
